@@ -1,0 +1,32 @@
+version: "3.9"
+
+services:
+
+  # 백엔드 서비스 Spring Boot
+  backend:
+    container_name: springboot_server
+    build:
+      context: ./deploy005_springboot_react
+      dockerfile: Dockerfile
+    ports:
+      - "9090:9090"
+    networks:
+      - app-network
+
+  # 프론트엔드 서비스 React + Nginx
+  react_front:
+    container_name: react_front
+    build:
+      context: ./deploy_front
+      dockerfile: Dockerfile
+    ports:
+      - "5173:80"
+    depends_on:
+      - backend
+    networks:
+      - app-network
+
+# 컨테이너 간 통신을 위한 네트워크 설정
+networks:
+  app-network:
+    driver: bridge
