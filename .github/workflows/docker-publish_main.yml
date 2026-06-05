@@ -78,45 +78,45 @@ jobs:
           platforms: linux/amd64,linux/arm64
           tags: ${{ secrets.DOCKER_USERNAME }}/deploy_front:latest
 
-# Docker hub에 이미지를 push 하고, 운영 서버에 배포
-deploy:
-  needs: build-and-push
-  runs-on: ubuntu-latest
+  # Docker hub에 이미지를 push 하고, 운영 서버에 배포
+  deploy:
+    needs: build-and-push
+    runs-on: ubuntu-latest
 
-  steps:
-    - name: SSH Remote Commands
-      uses: appleboy/ssh-action@v1.0.3
+    steps:
+      - name: SSH Remote Commands
+        uses: appleboy/ssh-action@v1.0.3
 
-      with:
-        host: ${{ secrets.SERVER_HOST }}
-        username: ${{ secrets.SERVER_USERNAME }}
-        password: ${{ secrets.SERVER_PASSWORD }}
-        port: ${{ secrets.SERVER_PORT }}
+        with:
+          host:     ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USERNAME }}
+          password: ${{ secrets.SERVER_PASSWORD }}
+          port:     ${{ secrets.SERVER_PORT }}
 
-        script: |
-          # 1. 네트워크 생성 (이미 있으면 무시)
-          docker network create app-network || true
+          script: |
+            # 1. 네트워크 생성 (이미 있으면 무시)
+            docker network create app-network || true
 
-          # 2. 기존 컨테이너 중지 및 삭제
-          docker stop springboot_server react_front || true
-          docker rm springboot_server react_front || true
+            # 2. 기존 컨테이너 중지 및 삭제
+            docker stop springboot_server react_front || true
+            docker rm springboot_server react_front || true
 
-          # 3. 최신 이미지 Pull
-          docker pull ${{ secrets.DOCKER_USERNAME }}/deploy005_springboot:latest
-          docker pull ${{ secrets.DOCKER_USERNAME }}/deploy_front:latest
+            # 3. 최신 이미지 Pull
+            docker pull ${{ secrets.DOCKER_USERNAME }}/deploy005_springboot:latest
+            docker pull ${{ secrets.DOCKER_USERNAME }}/deploy_front:latest
 
-          # 4. 컨테이너 실행
-          docker run -d \
-            --name springboot_server \
-            -p 8080:8080 \
-            --network app-network \
-            ${{ secrets.DOCKER_USERNAME }}/deploy005_springboot:latest
+            # 4. 컨테이너 실행
+            docker run -d \
+              --name springboot_server \
+              -p 9090:9090 \
+              --network app-network \
+              ${{ secrets.DOCKER_USERNAME }}/deploy005_springboot:latest
 
-          docker run -d \
-            --name react_front \
-            -p 5173:80 \
-            --network app-network \
-            ${{ secrets.DOCKER_USERNAME }}/deploy_front:latest
+            docker run -d \
+              --name react_front \
+              -p 5173:80 \
+              --network app-network \
+              ${{ secrets.DOCKER_USERNAME }}/deploy_front:latest
 
-          # 5. 미사용 이미지 정리
-          docker image prune -f
+            # 5. 미사용 이미지 정리
+            docker image prune -f
