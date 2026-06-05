@@ -29,24 +29,25 @@
 # CMD [ "npm", "run", "dev", "--", "--hose" ]
 
 ######################################################
-#1단계 : 빌드
-FROM node:24-alpine AS build
-WORKDIR /app
+# #1단계 : 빌드
+# FROM node:24-alpine AS build
+# WORKDIR /app
 
-# package.json을 통해서 의존성(패키지) 설치
-COPY package.json ./
-RUN npm install
+# # package.json을 통해서 의존성(패키지) 설치
+# COPY package.json ./
+# RUN npm install
 
-# 소스코드 복사
-COPY . .
-# React 빌드 수행(dist 폴더 생성)
-RUN npm run build
+# # 소스코드 복사
+# COPY . .
+# # React 빌드 수행(dist 폴더 생성)
+# RUN npm run build
 
 # 2단계 : 실행환경(Nginx 환경 연결)
 FROM nginx:stable-alpine
 
 # React의 빌드 결과물을 Nginx 정적폴더로 복사
-COPY --from=build /app/dist /usr/share/nginx/html
+# COPY --from=build /app/dist /usr/share/nginx/html
+COPY dist /usr/share/nginx/html
 
 # Nginx기본 설정 대신에 사용할 설정파일이 있다면 추가로 Copy해주면 된다
 # COPY nginx.conf /etc/nginx/conf.d/default.conf
